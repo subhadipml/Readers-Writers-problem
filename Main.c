@@ -1,49 +1,59 @@
 #include<stdio.h>
-#include<unistd.h>
 #include<pthread.h>
-#include<string.h>
+#include<semaphore.h>
+#include<stdlib.h>
 
-pthread_mutex_t mutex, writeblock;
-int data = 0, rcount = 0;
+sem_t mutex, wrt;
+int s = 10, rcount = 0;
 
-void *reader(void *arg){
-        int num = (int)arg;
-        pthread_mutex_lock(&mutex);
-        rcount++;
-        if(rcount==1){
-                pthread_mutex_lock(&writeblock);
-        }
-        pthread_mutex_unlock(&mutex);
-        printf("Data read by the Reader%d is %d\n", num, data);
-        sleep(1);
-        pthread_mutex_lock(&mutex);
-        rcount--;
-        if(rcount==0){
-                pthread_mutex_unlock(&writeblock);
-        }
-        pthread_mutex_unlock(&mutex);
+void *writer(){
+        sem_wait(&wrt);
+        int n = rand() % 5;
+        printf("Writer Wait for Random time between 0-5 = %d\n", n);
+        sleep(n);
+        printf("Shared value increament by 10\n");
+        s+=10;
+        printf("Writer: No. of reader present = %d, When shared value = %d\n", rcount, s);
+        sem_post(&wrt);
 }
 
-void *writer(void *arg){
-        int num = (int)arg;
-        pthread_mutex_lock(&writeblock);
-        data++;
-        printf("Data written by the Writer%d is %d\n", num, data);
-        sleep(1);
-        pthread_mutex_unlock(&writeblock);
+void *reader(){
+        //Entry Part
+        sem_wait(&mutex);
+        rcount++;
+        if(rcount==1){
+                sem_wait(&wrt);//No writer should come
+        }
+        sem_post(&mutex);//so next reader can come
+        //Exit Part
+        int n = rand() % 5;
+        printf("Reader wait for Random time between 0-5 = %d\n", n);
+        sleep(n);
+        printf("Reader: No. of reader present = %d, When shared value = %d\n", rcount, s);
+        sem_wait(&mutex);
+        rcount--;
+        if(rcount==0){//Now writer can come if they want
+                sem_post(&wrt);
+        }
+        sem_post(&mutex);
 }
 
 int main(){
-        pthread_t rtid[5], wtid[5];
-        pthread_mutex_init(&mutex, NULL);
-        pthread_mutex_init(&writeblock, NULL);
+        printf("Initial value of share variable = %d\n", s);
+        int n;
+        printf("Enter the no. of Reader = Writer\n");
+        scanf("%d", &n);
+        pthread_t r[n], w[n];
+        sem_init(&wrt, 0, 1);
+        sem_init(&mutex, 0, 1);
+        printf("Total no. of READERS=WRITERS=%d\n", n);
         for(int i=0; i<n; i++){
-                pthread_create(&wtid[i], NULL, &writer, (void*)i);
-                pthread_create(&rtid[i], NULL, &reader, (void*)i);
+                pthread_create(&w[i], NULL, &writer, NULL);
+                pthread_create(&r[i], NULL, &reader, NULL);
         }
         for(int i=0; i<n; i++){
-                pthread_join(wtid[i], NULL);
-                pthread_join(rtid[i], NULL);
+                pthread_join(w[i], NULL);
+                pthread_join(r[i], NULL);
         }
-        return 0;
+        printf("Final value of share variable = %d\n", s);
 }
