@@ -9,7 +9,7 @@ int s, rcount = 0;
 void *writer(void *arg){
         pthread_mutex_lock(&wrt);
         int n = rand() % 10;
-        int d =*((int*)arg);
+        int d = ((int)arg);
         printf("--------------------------------------------------\n");
         printf("W%d Wait for Random time between 0ns and 10ns = %d\n", d, n);
         sleep(n);
@@ -39,7 +39,7 @@ void *reader(void *arg){
         pthread_mutex_unlock(&mutex);//so next reader can come
         //Exit Part
         int n = rand() % 10;
-        int d = *((int*)arg);
+        int d = ((int)arg);
         printf("R%d wait for Random time between 0ns and 10ns = %d\n", d, n);
         sleep(n);
         printf("Enter the number of time R%d want to read:\n", d);
@@ -98,8 +98,8 @@ void main(){
 
         if(wn==rn){
                 for(i=0; i<wn; i++){
-                        pthread_create(&w[i], NULL, &writer, &i);
-                        pthread_create(&r[i], NULL, &reader, &i);
+                        pthread_create(&w[i], NULL, &writer, (int *)i);
+                        pthread_create(&r[i], NULL, &reader, (int *)i);
                 }
                 for(i=0; i<wn; i++){
                         pthread_join(w[i], NULL);
@@ -107,11 +107,11 @@ void main(){
                 }
         }else if(wn>rn){
                 for(i=0; i<rn; i++){
-                        pthread_create(&w[i], NULL, &writer, &i);
-                        pthread_create(&r[i], NULL, &reader, &i);
+                        pthread_create(&w[i], NULL, &writer, (int *)i);
+                        pthread_create(&r[i], NULL, &reader, (int *)i);
                 }
                 for(i=rn; i<wn; i++){
-                        pthread_create(&w[i], NULL, &writer, &i);
+                        pthread_create(&w[i], NULL, &writer, (int *)i);
                 }
                 for(i=0; i<rn; i++){
                         pthread_join(w[i], NULL);
@@ -122,11 +122,11 @@ void main(){
                 }
         }else{
                 for(i=0; i<wn; i++){
-                        pthread_create(&w[i], NULL, &writer, &i);
-                        pthread_create(&r[i], NULL, &reader, &i);
+                        pthread_create(&w[i], NULL, &writer, (int *)i);
+                        pthread_create(&r[i], NULL, &reader, (int *)i);
                 }
                 for(i=wn; i<rn; i++){
-                        pthread_create(&r[i], NULL, &reader, &i);
+                        pthread_create(&r[i], NULL, &reader, (int *)i);
                 }
                 for(i=0; i<wn; i++){
                         pthread_join(w[i], NULL);
