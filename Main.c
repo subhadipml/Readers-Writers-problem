@@ -17,7 +17,8 @@ void *writer(void *arg){
         int t;
         scanf("%d", &t);
         printf("Now W%d is writing... i.e. ADDING...\n", d);
-        for(int j=0; j<t; j++){
+        int j;
+        for(j=0; j<t; j++){
                 printf("Enter the %dth INTEGER value to write:\n", (j+1));
                 int u;
                 scanf("%d", &u);
@@ -45,7 +46,8 @@ void *reader(void *arg){
         int t;
         scanf("%d", &t);
         printf("Now R%d is reading....\n", d);
-        for(int j=0; j<t; j++){
+        int j;
+        for(j=0; j<t; j++){
                 printf("R%d read the shared value = %d\n", d, s);
         }
         printf("Number of Readers present = %d\n", rcount);
